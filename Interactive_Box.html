@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Box with Toggle</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 0;
+            padding: 20px;
+            height: 100vh;
+            background-color: #f0f0f0;
+        }
+
+        #the_box {
+            width: 300px;
+            height: 300px;
+            background-color: purple;
+            position: relative;
+            margin: 20px auto;
+        }
+
+        #circle {
+            width: 50px;
+            height: 50px;
+            background-color: pink;
+            border-radius: 50%;
+            position: absolute;
+            pointer-events: none;
+        }
+
+        .toggle-container {
+            display: flex;
+            align-items: center;
+            margin-top: 20px;
+        }
+
+        .toggle-switch {
+            position: relative;
+            width: 60px;
+            height: 30px;
+            background-color: lightgray;
+            border-radius: 15px;
+            cursor: pointer;
+            margin-left: 10px;
+            transition: background-color 0.3s ease;
+        }
+
+        .toggle-switch.active {
+            background-color: dodgerblue;
+        }
+
+        .toggle-knob {
+            position: absolute;
+            width: 25px;
+            height: 25px;
+            background-color: white;
+            border-radius: 50%;
+            top: 50%;
+            left: 5px;
+            transform: translateY(-50%);
+            transition: left 0.3s ease;
+        }
+
+        .toggle-switch.active .toggle-knob {
+            left: 30px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Interactive Box</h1>
+    <div id="the_box"></div>
+
+    <div class="toggle-container">
+        <label>Follow Anywhere:</label>
+        <div id="toggle_switch" class="toggle-switch">
+            <div class="toggle-knob"></div>
+        </div>
+    </div>
+
+    <script>
+        "use strict";
+
+        // Set up the color cycling for the box
+        const box = document.getElementById("the_box");
+        const colors = ["red", "green", "purple", "orange", "dodgerblue"];
+        let colorIndex = 0;
+
+        box.addEventListener("click", () => {
+            colorIndex = (colorIndex + 1) % colors.length;
+            box.style.backgroundColor = colors[colorIndex];
+        });
+
+        // Set up the circle following behavior
+        const circle = document.createElement("div");
+        circle.id = "circle";
+        box.appendChild(circle);
+
+        let followMode = "inside"; // Default mode: Inside the box
+        const toggleSwitch = document.getElementById("toggle_switch");
+
+        toggleSwitch.addEventListener("click", () => {
+            followMode = followMode === "inside" ? "global" : "inside";
+            toggleSwitch.classList.toggle("active");
+        });
+
+        function handleMouseMove(event) {
+            let x, y;
+
+            if (followMode === "inside") {
+                const rect = box.getBoundingClientRect();
+                x = event.clientX - rect.left - circle.offsetWidth / 2;
+                y = event.clientY - rect.top - circle.offsetHeight / 2;
+
+                // Ensure the circle stays inside the box
+                if (x < 0 || x > rect.width - circle.offsetWidth || y < 0 || y > rect.height - circle.offsetHeight) {
+                    return;
+                }
+            } else {
+                x = event.clientX - circle.offsetWidth / 2;
+                y = event.clientY - circle.offsetHeight / 2;
+            }
+
+            circle.style.left = `${x}px`;
+            circle.style.top = `${y}px`;
+        }
+
+        document.addEventListener("mousemove", (event) => {
+            if (followMode === "inside" && !box.contains(event.target)) return;
+            handleMouseMove(event);
+        });
+    </script>
+</body>
+</html>
